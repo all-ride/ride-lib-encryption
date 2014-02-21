@@ -1,3 +1,3 @@
-# Pallo: Encryption Library
+# Ride: Encryption Library
 
-Encryption library of the PHP Pallo framework.
+Encryption library of the PHP Ride framework.

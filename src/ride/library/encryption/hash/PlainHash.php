@@ -1,6 +1,6 @@
 <?php
 
-namespace pallo\library\encryption\hash;
+namespace ride\library\encryption\hash;
 
 /**
  * Plain text hash implementation

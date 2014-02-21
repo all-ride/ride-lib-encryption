@@ -1,6 +1,6 @@
 <?php
 
-namespace pallo\library\encryption\hash;
+namespace ride\library\encryption\hash;
 
 /**
  * Interface for cryptographic hash algorithms. These are methods which take an
