@@ -1,6 +1,6 @@
 {
-    "name": "pallo/lib-encryption",
-    "description": "Encryption library of the Pallo framework",
+    "name": "ride/lib-encryption",
+    "description": "Encryption library of the Ride framework",
     "license": "MIT",
     "version": "0.1.0",
     "authors": [
@@ -11,7 +11,7 @@
     ],
     "autoload": {
         "psr-0": {
-            "pallo\\library\\encryption\\": ["src/", "test/src/"]
+            "ride\\library\\encryption\\": ["src/", "test/src/"]
         }
     }
 }

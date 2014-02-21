@@ -1,6 +1,6 @@
 <?php
 
-namespace pallo\library\encryption\cipher;
+namespace ride\library\encryption\cipher;
 
 /**
  * Interface to implement a cipher to encrypt and decrypt data using an encryption key

@@ -1,6 +1,6 @@
 <?php
 
-namespace pallo\library\encryption\cipher;
+namespace ride\library\encryption\cipher;
 
 /**
  * Generic URL-safe cipher
