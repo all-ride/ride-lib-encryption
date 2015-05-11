@@ -3,7 +3,7 @@
 namespace ride\library\encryption\hash;
 
 /**
- * Plain text hash implementation
+ * Plain text hash implementation for testing purposes
  */
 class PlainHash implements Hash {
 

@@ -8,10 +8,20 @@ namespace ride\library\encryption\cipher;
 interface Cipher {
 
     /**
+     * Generates a encryption key
+     * @return string
+     * @throw \ride\library\encryption\exception\EncryptionException when the
+     * key could not be generated
+     */
+    public function generateKey();
+
+    /**
      * Encrypts the plain data with the provided encryption key
      * @param string $data Plain data
      * @param string $key Encryption key
      * @return string Encrypted data
+     * @throw \ride\library\encryption\exception\EncryptionException when the
+     * data could not be encrypted
      */
     public function encrypt($data, $key);
 
@@ -20,6 +30,8 @@ interface Cipher {
      * @param string $data Encrypted data
      * @param string $key Encryption key
      * @return string Plain data
+     * @throw \ride\library\encryption\exception\EncryptionException when the
+     * data could not be decrypted
      */
     public function decrypt($data, $key);
 
