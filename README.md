@@ -14,13 +14,13 @@ Check this code sample to see the possibilities of this library:
     use ride\library\encryption\hash\GenericHash;
 
     // cipher to encrypt and decrypt data
-    $cipher = new GenericCiper();
-    $data = "Top secret mission";
-    
-    // if you don't have a secret key, you can generate one
-    $key = $cipher->generateKey();
-    
     try {
+        $cipher = new GenericCiper();
+        $data = "Top secret mission";
+        
+        // if you don't have a secret key, you can generate one
+        $key = $cipher->generateKey();
+        
         $encrypted = $cipher->encrypt($data, $key);
         $decrypted = $cipher->decrypt($encrypted, $key); 
     } catch (EncryptionException $exception) {
@@ -30,6 +30,3 @@ Check this code sample to see the possibilities of this library:
     // hash to generate a code of fixed size, good for passwords
     $hash = new GenericHash();
     $data = $hash->hash($data); 
-    
-    
-    
