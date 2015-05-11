@@ -2,6 +2,8 @@
 
 namespace ride\library\encryption\hash;
 
+use ride\library\encryption\exception\EncryptionException;
+
 /**
  * PHP builtin hash implementation
  */
@@ -24,7 +26,7 @@ class GenericHash implements Hash {
      * @param string $algorithm Name of the algorithm
      * @param boolean $rawOutput Flag to see if raw output should be returned
      * @return null
-     * @throws ride\library\encryption\exception\EncryptionException when the
+     * @throws \ride\library\encryption\exception\EncryptionException when the
      * provided algorithm is not available or when hashing is disabled
      */
     public function __construct($algorithm = 'sha256', $rawOutput = false) {
