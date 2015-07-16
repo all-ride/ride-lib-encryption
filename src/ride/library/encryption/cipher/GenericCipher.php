@@ -32,6 +32,12 @@ final class GenericCipher extends AbstractCipher {
     const HASH_ITERATIONS = 1024;
 
     /**
+     * Raw data constant for backwards compatibility
+     * @var integer
+     */
+    const OPENSSL_RAW_DATA = 1;
+
+    /**
      * Salt for the encryption key derivation
      * @var string
      */
@@ -123,7 +129,7 @@ final class GenericCipher extends AbstractCipher {
 
             // encrypt the data
             $encryptionKey = $this->pbkdf2($key, $this->saltEncryption);
-            $data = openssl_encrypt($data, self::METHOD, $encryptionKey, OPENSSL_RAW_DATA, $initializationVector);
+            $data = openssl_encrypt($data, self::METHOD, $encryptionKey, self::OPENSSL_RAW_DATA, $initializationVector);
             if ($data === false) {
                 throw new EncryptionException('Encrypt returned false');
             }
@@ -187,7 +193,7 @@ final class GenericCipher extends AbstractCipher {
 
             // decrypt the data
             $encryptionKey = $this->pbkdf2($key, $this->saltEncryption);
-            $data = openssl_decrypt($data, self::METHOD, $encryptionKey, OPENSSL_RAW_DATA, $initializationVector);
+            $data = openssl_decrypt($data, self::METHOD, $encryptionKey, self::OPENSSL_RAW_DATA, $initializationVector);
             if ($data === false) {
                 throw new EncryptionException('Decrypt returned false');
             }
