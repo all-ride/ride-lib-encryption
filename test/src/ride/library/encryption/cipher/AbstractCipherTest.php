@@ -28,8 +28,6 @@ abstract class AbstractCipherTest extends PHPUnit_Framework_TestCase {
         $decrypted = $this->cipher->decrypt($encrypted, $key);
 
         $this->assertEquals($decrypted, $data);
-
-        // echo "\n" . $encrypted . "\n";
     }
 
     /**
