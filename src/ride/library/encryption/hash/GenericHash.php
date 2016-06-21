@@ -35,8 +35,14 @@ class GenericHash implements Hash {
         }
 
         $availableAlgorithms = hash_algos();
-        if (!in_array($algorithm, $availableAlgorithms)) {
-            throw new EncryptionException('Could not create hash algorithm: ' . $algorithm . ' is not supported by your PHP installation. Try one of the following: ', implode(', ', $availableAlgorithms));
+        if (!is_string($algorithm) || !in_array($algorithm, $availableAlgorithms)) {
+            if (is_object($algorithm)) {
+                $algorithm = get_class($algorithm);
+            } elseif (is_array($algorithm)) {
+                $algorithm = 'Array()';
+            }
+
+            throw new EncryptionException('Could not create hash algorithm: ' . $algorithm . ' is not supported by your PHP installation. Try one of the following: ' . implode(', ', $availableAlgorithms));
         }
 
         $this->algorithm = $algorithm;
