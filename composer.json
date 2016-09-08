@@ -10,7 +10,12 @@
     ],
     "autoload": {
         "psr-0": {
-            "ride\\library\\encryption\\": ["src/", "test/src/"]
+            "ride\\library\\encryption\\": ["src/"]
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "ride\\library\\encryption\\": ["test/src/"]
         }
     }
 }
