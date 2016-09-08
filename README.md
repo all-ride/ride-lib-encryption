@@ -2,9 +2,6 @@
 
 Encryption library of the PHP Ride framework.
 
-This library provides interfaces for cipher and hash implementations. 
-Some implementations are provided to make it useful out of the box. 
-
 ## What's In This Library
 
 ### Cipher
