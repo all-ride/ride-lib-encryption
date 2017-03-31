@@ -166,9 +166,20 @@ abstract class AbstractCipher implements Cipher {
             throw new EncryptionException('Could not generate random string: invalid length provided');
         }
 
-        $random = mcrypt_create_iv($length, $this->randomSource);
+        $exception = null;
+
+        if (function_exists('random_bytes')) {
+            try {
+                $random = random_bytes($length);
+            } catch (Exception $exception) {
+                $random = false;
+            }
+        } else {
+            $random = mcrypt_create_iv($length, $this->randomSource);
+        }
+
         if ($random === false) {
-            throw new EncryptionException('Could not generate random string');
+            throw new EncryptionException('Could not generate random string', 0, $exception);
         }
 
         return $random;
