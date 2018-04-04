@@ -60,16 +60,12 @@ final class GenericCipher extends AbstractCipher {
      * @param string|null $saltEncryption Salt for the encryption key derivation
      * @param string|null $saltAuthorization Salt for the authorization key
      * derivation
-     * @param integer|null $randomSource Source of the initialization vector.
-     * The source can be MCRYPT_RAND (system random number generator),
-     * MCRYPT_DEV_RANDOM (read data from /dev/random) and MCRYPT_DEV_URANDOM
-     * (read data from /dev/urandom). Defaults to MCRYPT_DEV_URANDOM.
      * @return null
      * @throw \ride\library\encryption\exception\EncryptionException when the
      * cipher could not be initialized
      */
-    public function __construct($saltEncryption = null, $saltAuthorization = null, $randomSource = null) {
-        parent::__construct($randomSource);
+    public function __construct($saltEncryption = null, $saltAuthorization = null) {
+        parent::__construct();
 
         if ($saltEncryption === null) {
             $saltEncryption = '80MEnmD38z5iM5wTO27QRUtziUv3ICRUtziUv3IC';
