@@ -28,12 +28,6 @@ abstract class AbstractCipher implements Cipher {
     protected $initializationVectorLength;
 
     /**
-     * Source of the initialization vector.
-     * @var integer
-     */
-    protected $randomSource;
-
-    /**
      * Flag to see if the key should be truncated to required key size
      * @var boolean
      */
@@ -41,24 +35,12 @@ abstract class AbstractCipher implements Cipher {
 
     /**
      * Constructs a new instance of the cipher
-     * @param integer|null $randomSource Source of the initialization vector.
-     * The source can be MCRYPT_RAND (system random number generator),
-     * MCRYPT_DEV_RANDOM (read data from /dev/random) and MCRYPT_DEV_URANDOM
-     * (read data from /dev/urandom). Defaults to MCRYPT_DEV_URANDOM.
      * @return null
      * @throw \ride\library\encryption\exception\EncryptionException when the
      * cipher could not be initialized
      */
-    public function __construct($randomSource = null) {
+    public function __construct() {
         $this->testSystem();
-
-        if ($randomSource === null) {
-            $randomSource = MCRYPT_DEV_URANDOM;
-        } elseif ($randomSource !== MCRYPT_RAND && $randomSource !== MCRYPT_DEV_RANDOM && $randomSource !== MCRYPT_DEV_URANDOM) {
-            throw new EncryptionException('Could not create cipher: invalid random source provided, try MCRYPT_RAND, MCRYPT_DEV_RANDOM or MCRYPT_DEV_URANDOM.');
-        }
-
-        $this->randomSource = $randomSource;
     }
 
     /**
@@ -78,9 +60,6 @@ abstract class AbstractCipher implements Cipher {
     protected function testSystem() {
         if (!function_exists('hash_algos') || !function_exists('hash_hmac')) {
             throw new EncryptionException('Could not create cipher: hash functions are not installed or enabled, check your PHP installation.');
-        }
-        if (!function_exists('mcrypt_create_iv')) {
-            throw new EncryptionException('Could not create cipher: mcrypt functions are not installed or enabled, check your PHP installation.');
         }
 
         if (ini_get('mbstring.func_overload')) {
@@ -166,20 +145,9 @@ abstract class AbstractCipher implements Cipher {
             throw new EncryptionException('Could not generate random string: invalid length provided');
         }
 
-        $exception = null;
-
-        if (function_exists('random_bytes')) {
-            try {
-                $random = random_bytes($length);
-            } catch (Exception $exception) {
-                $random = false;
-            }
-        } else {
-            $random = mcrypt_create_iv($length, $this->randomSource);
-        }
-
+        $random = random_bytes($length);
         if ($random === false) {
-            throw new EncryptionException('Could not generate random string', 0, $exception);
+            throw new EncryptionException('Could not generate random string');
         }
 
         return $random;

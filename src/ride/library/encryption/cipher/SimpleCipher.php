@@ -17,13 +17,7 @@ final class SimpleCipher extends AbstractCipher {
      * Cipher algorithm
      * @var string
      */
-    const METHOD = 'blowfish';
-
-    /**
-     * Cipher mode
-     * @var string
-     */
-    const MODE = 'cbc';
+    const METHOD = 'bf-cbc';
 
     /**
      * Size of the checksum hash
@@ -33,18 +27,13 @@ final class SimpleCipher extends AbstractCipher {
 
     /**
      * Constructs a new instance of the cipher
-     * @param integer|null $randomSource Source of the initialization vector.
-     * The source can be MCRYPT_RAND (system random number generator),
-     * MCRYPT_DEV_RANDOM (read data from /dev/random) and MCRYPT_DEV_URANDOM
-     * (read data from /dev/urandom). Defaults to MCRYPT_DEV_URANDOM.
-     * @return null
      * @throw \ride\library\encryption\exception\EncryptionException when the
-     * cipher could not be initialized
+     * cipher could not be initialized on this system
      */
-    public function __construct($randomSource = null) {
-        parent::__construct($randomSource);
+    public function __construct() {
+        parent::__construct();
 
-        $this->initializationVectorLength = mcrypt_get_iv_size(self::METHOD, self::MODE);
+        $this->initializationVectorLength = openssl_cipher_iv_length(self::METHOD);
         if ($this->initializationVectorLength === false || $this->initializationVectorLength <= 0) {
             throw new EncryptionException('Could not create cipher: invalid initialization vector length received.');
         }
@@ -59,11 +48,11 @@ final class SimpleCipher extends AbstractCipher {
     protected function testSystem() {
         parent::testSystem();
 
-        if (!function_exists('mcrypt_list_algorithms')) {
-            throw new EncryptionException('Could not create cipher: mcrypt functions are not installed or enabled, check your PHP installation.');
+        if (!function_exists('openssl_get_cipher_methods')) {
+            throw new EncryptionException('Could not create cipher: SSL functions are not installed or enabled, check your PHP installation.');
         }
 
-        if (!in_array(self::METHOD, mcrypt_list_algorithms(), true)) {
+        if (!in_array(self::METHOD, openssl_get_cipher_methods(), true)) {
             throw new EncryptionException('Could not create cipher: method ' . self::METHOD . ' is not supported.');
         }
     }
@@ -82,24 +71,36 @@ final class SimpleCipher extends AbstractCipher {
             $key = $this->getKey($key);
             $initializationVector = $this->generateRandom($this->initializationVectorLength);
 
-            // add checksum
-            $data = $this->addChecksum($data, $key);
-
-            // encrypt the data
-            $data = mcrypt_encrypt(self::METHOD, $key, $data, self::MODE, $initializationVector);
-            if ($data === false) {
-                throw new EncryptionException('Encrypt returned false');
-            }
-
-            // add the initialization vector to the encrypted data
-            $data = $initializationVector . $data;
-
-            // pack the result
-        	$data = $this->pack($data);
+            $data = $this->performEncrypt($data, $key, $initializationVector);
         } catch (Exception $exception) {
             throw new EncryptionException('Could not encrypt the provided data', 0, $exception);
         }
+
         return $data;
+    }
+
+    /**
+     * Perform the actual encryption
+     * @param string $data Plain data
+     * @param string $key Validated key
+     * @param string $initializationVector Random string for the encryption
+     * @return string Decrypted data
+     */
+    private function performEncrypt($data, $key, $initializationVector) {
+        // add checksum
+        $data = $this->addChecksum($data, $key);
+
+        // encrypt the data
+        $data = openssl_encrypt($data, self::METHOD, $key, 0, $initializationVector);
+        if ($data === false) {
+            throw new EncryptionException('Encrypt returned false');
+        }
+
+        // add the initialization vector to the encrypted data
+        $data = $initializationVector . $data;
+
+        // pack the result
+    	return $this->pack($data);
     }
 
     /**
@@ -112,6 +113,9 @@ final class SimpleCipher extends AbstractCipher {
      */
     public function decrypt($data, $key) {
         try {
+            // keep incoming data for validation at the end
+            $inData = $data;
+
             // make preparations
             $data = $this->unpack($data);
             $key = $this->getKey($key);
@@ -128,15 +132,12 @@ final class SimpleCipher extends AbstractCipher {
                 throw new EncryptionException('Initialization vector could not be extracted');
             }
 
-            // decrypt the data
-        	$data = mcrypt_decrypt(self::METHOD, $key, $data, self::MODE, $initializationVector);
-            if ($data === false) {
-                throw new EncryptionException('Decrypt returned false');
-            }
-            $data = rtrim($data, "\0");
+            $data = $this->performDecrypt($data, $key, $initializationVector);
 
-            // validate checksum
-            $data = $this->validateChecksum($data, $key);
+            // validate encrypted data
+            if ($inData !== $this->performEncrypt($data, $key, $initializationVector)) {
+                throw new EncryptionException('Encrypted data is tampered with: "' . $data . '"');
+            }
         } catch (Exception $exception) {
             throw new EncryptionException('Could not decrypt the provided data', 0, $exception);
         }
@@ -145,8 +146,29 @@ final class SimpleCipher extends AbstractCipher {
     }
 
     /**
+     * Perform the actual decryption
+     * @param string $data Encrypted data withouth the initialization vector
+     * @param string $key Validated key
+     * @param string $initializationVector Random string for the encryption
+     * @return string Decrypted data
+     */
+    private function performDecrypt($data, $key, $initializationVector) {
+        // decrypt the data
+    	$data = openssl_decrypt($data, self::METHOD, $key, 0, $initializationVector);
+        if ($data === false) {
+            throw new EncryptionException('Decrypt returned false');
+        }
+
+        $data = rtrim($data, "\0");
+
+        // validate checksum
+        return $this->validateChecksum($data, $key);
+    }
+
+    /**
      * Adds a checksum to the provided data
      * @param string $data
+     * @param string $key
      * @return string
      */
     private function addChecksum($data, $key) {
@@ -156,9 +178,10 @@ final class SimpleCipher extends AbstractCipher {
     /**
      * Validates a checksum to the provided data
      * @param string $data Data with checksum
+     * @param string $key
      * @return string Data without the checksum
-     * @throws \ride\library\encryption\EncryptionException when the checksum
-     * could not be validated
+     * @throws \ride\library\encryption\exception\EncryptionException when the
+     * checksum could not be validated
      */
     private function validateChecksum($data, $key) {
         // check trailing #
@@ -194,7 +217,7 @@ final class SimpleCipher extends AbstractCipher {
      * Creates a checksum for the provided data
      * @param string $data
      * @param string $key
-     * @return null
+     * @return string
      */
     private function getChecksum($data, $key) {
         $checksum = $this->hmac($data, $key, false);
